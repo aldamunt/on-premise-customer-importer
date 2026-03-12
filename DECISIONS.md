@@ -52,4 +52,21 @@ Decisiones técnicas y de diseño del proyecto **On-Premise Customer Importer**.
 
 ---
 
+## Web API
+
+### ADR-009: Diseño de la Web API
+- ASP.NET Core Minimal API (.NET 8), por simplicidad y alineación con el spec.
+- TDD con tests de integración usando `WebApplicationFactory<Program>`.
+- Reutilización directa de `CustomerStore`, `CustomerValidator` y `Customer` del proyecto Core.
+- Fichero de persistencia propio de la API (`data/clientes_store.db`), independiente del Desktop.
+- El `Dictionary<string, Customer>` interno se mantiene por rendimiento; la API serializa los valores como array en las respuestas.
+- Serialización con Newtonsoft.Json (ya usado en Core) y `CamelCasePropertyNamesContractResolver` para respuestas y peticiones.
+- Thread-safety con `lock` inline en `Program.cs`, sin wrappers adicionales.
+- Ruta del fichero configurable via clave `StorePath` en `IConfiguration`, con valor por defecto `data/clientes_store.db`.
+- Tests aislados: cada clase de test crea un fichero temporal único y lo elimina al finalizar (patrón `IDisposable`).
+- Errores de validación en el 400 con estructura `{ "errors": [{ "field": "...", "message": "..." }] }`.
+- Header `Location` en el 201 apunta a `/clientes/{dni}`.
+
+---
+
 *Cada nueva decisión se añade al final con el siguiente número de ADR.*
