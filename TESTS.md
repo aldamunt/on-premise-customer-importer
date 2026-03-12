@@ -1,6 +1,6 @@
 # Test Specification
 
-Tests unitarios del proyecto **CustomerImporter.Desktop**, organizados por servicio.
+Tests del proyecto **On-Premise Customer Importer**, organizados por servicio.
 
 ---
 
@@ -104,3 +104,48 @@ Tests unitarios del proyecto **CustomerImporter.Desktop**, organizados por servi
 | Guardar en directorio inexistente | Crea el directorio |
 | Merge: DNI nuevo | Se añade |
 | Merge: DNI existente | Se actualiza |
+
+---
+
+## Web API — Tests de integración
+
+Tests de integración con `WebApplicationFactory<Program>`. Cada clase hereda de `ApiTestBase`,
+que crea un fichero de store temporal aislado y lo elimina al finalizar.
+
+### GET /clientes
+
+| Caso | Esperado |
+|------|----------|
+| Store vacío | 200 + array vacío `[]` |
+| Store con dos clientes | 200 + array con 2 elementos |
+| Respuesta con datos | Propiedades en camelCase (`dni`, `nombre`, `fechaNacimiento`, ...) |
+
+### GET /clientes/{dni}
+
+| Caso | Esperado |
+|------|----------|
+| DNI existente | 200 + objeto cliente con datos correctos |
+| DNI inexistente | 404 |
+| Varios clientes en store | 200 + solo el cliente solicitado |
+
+### POST /clientes
+
+| Caso | Esperado |
+|------|----------|
+| Datos válidos | 201 |
+| Datos válidos | Header `Location: /clientes/{dni}` |
+| Datos válidos | Body contiene el cliente creado |
+| DNI duplicado | 400 |
+| DNI duplicado | Body `errors` contiene error con `field: "Dni"` |
+| Datos inválidos (DNI + email mal) | 400 |
+| Datos inválidos | Body `errors` contiene errores por campo (`Dni`, `Email`) |
+| POST seguido de GET | 200 + datos íntegros (roundtrip) |
+
+### DELETE /clientes/{dni}
+
+| Caso | Esperado |
+|------|----------|
+| DNI existente | 204 |
+| DNI inexistente | 404 |
+| DNI existente | Cliente ya no recuperable (GET → 404) |
+| Varios clientes, se borra uno | El resto permanecen intactos |
