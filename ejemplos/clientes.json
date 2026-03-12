@@ -1,0 +1,26 @@
+[
+  {
+    "dni": "12345678A",
+    "nombre": "Joan",
+    "apellidos": "Garcia Puig",
+    "fechaNacimiento": "1990-05-15",
+    "telefono": "612345678",
+    "email": "joan.garcia@example.com"
+  },
+  {
+    "dni": "87654321B",
+    "nombre": "Maria",
+    "apellidos": "Lopez Soler",
+    "fechaNacimiento": "1985-11-22",
+    "telefono": "698765432",
+    "email": "maria.lopez@example.com"
+  },
+  {
+    "dni": "11223344C",
+    "nombre": "Pere",
+    "apellidos": "Fernandez Vila",
+    "fechaNacimiento": "2000-03-08",
+    "telefono": "677112233",
+    "email": "pere.fernandez@example.com"
+  }
+]

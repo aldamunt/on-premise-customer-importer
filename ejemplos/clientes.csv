@@ -1,0 +1,4 @@
+dni,nombre,apellidos,fechaNacimiento,telefono,email
+12345678A,Joan,Garcia Puig,1990-05-15,612345678,joan.garcia@example.com
+87654321B,Maria,Lopez Soler,1985-11-22,698765432,maria.lopez@example.com
+11223344C,Pere,Fernandez Vila,2000-03-08,677112233,pere.fernandez@example.com
