@@ -19,6 +19,8 @@ public class MainForm : Form
     private readonly ToolStripButton _btnImportJson = new();
     private readonly ToolStripButton _btnAdd = new();
     private readonly ToolStripButton _btnDelete = new();
+    private readonly ToolStripButton _btnExportCsv = new();
+    private readonly ToolStripButton _btnExportJson = new();
     private ToolStripStatusLabel _countLabel = new();
     private ToolStripStatusLabel _saveIndicator = new();
 
@@ -64,8 +66,19 @@ public class MainForm : Form
         _btnDelete.DisplayStyle = ToolStripItemDisplayStyle.Text;
         _btnDelete.Click += OnDeleteClick;
 
+        _btnExportCsv.Text = "  Exportar CSV  ";
+        _btnExportCsv.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        _btnExportCsv.Click += (_, _) => ExportFile("csv");
+
+        _btnExportJson.Text = "  Exportar JSON  ";
+        _btnExportJson.DisplayStyle = ToolStripItemDisplayStyle.Text;
+        _btnExportJson.Click += (_, _) => ExportFile("json");
+
         _toolbar.Items.Add(_btnImportCsv);
         _toolbar.Items.Add(_btnImportJson);
+        _toolbar.Items.Add(new ToolStripSeparator());
+        _toolbar.Items.Add(_btnExportCsv);
+        _toolbar.Items.Add(_btnExportJson);
         _toolbar.Items.Add(new ToolStripSeparator());
         _toolbar.Items.Add(_btnAdd);
         _toolbar.Items.Add(_btnDelete);
@@ -326,6 +339,36 @@ public class MainForm : Form
         SetStatus($"Importados {result.Customers.Count} clientes. Total: {_customers.Count}.");
     }
 
+    private void ExportFile(string format)
+    {
+        if (_bindingList.Count == 0)
+        {
+            SetStatus("No hay clientes para exportar.");
+            return;
+        }
+
+        var filter = format == "csv"
+            ? "Archivos CSV (*.csv)|*.csv"
+            : "Archivos JSON (*.json)|*.json";
+
+        using var dialog = new SaveFileDialog
+        {
+            Filter = filter,
+            Title = $"Exportar clientes a {format.ToUpper()}",
+            FileName = $"clientes.{format}"
+        };
+
+        if (dialog.ShowDialog() != DialogResult.OK) return;
+
+        var customers = _bindingList.ToList();
+        var content = format == "csv"
+            ? CsvCustomerExporter.Export(customers)
+            : JsonCustomerExporter.Export(customers);
+
+        File.WriteAllText(dialog.FileName, content);
+        SetStatus($"Exportados {customers.Count} clientes a {dialog.FileName}.");
+    }
+
     private void OnAddClick(object? sender, EventArgs e)
     {
         _bindingList.Add(new Customer());
@@ -421,6 +464,8 @@ public class MainForm : Form
     {
         _btnImportCsv.Enabled = enabled;
         _btnImportJson.Enabled = enabled;
+        _btnExportCsv.Enabled = enabled;
+        _btnExportJson.Enabled = enabled;
         _btnAdd.Enabled = enabled;
         _btnDelete.Enabled = enabled;
     }

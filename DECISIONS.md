@@ -43,6 +43,13 @@ Decisiones técnicas y de diseño del proyecto **On-Premise Customer Importer**.
 - Grid con filas de 38px, cabeceras de 42px, columnas proporcionales al contenido.
 - Fuente Segoe UI 9.5pt, estándar para aplicaciones contables.
 
+### ADR-008: Exportación a CSV y JSON
+- El usuario puede exportar los clientes actuales a CSV o JSON.
+- SaveFileDialog para elegir carpeta y nombre de fichero.
+- Formato CSV con misma cabecera que la importación (roundtrip compatible).
+- Formato JSON con camelCase y pretty-print.
+- Tests de roundtrip: exportar → importar recupera los datos originales.
+
 ---
 
 *Cada nueva decisión se añade al final con el siguiente número de ADR.*
