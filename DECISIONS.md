@@ -54,18 +54,24 @@ Decisiones técnicas y de diseño del proyecto **On-Premise Customer Importer**.
 
 ## Web API
 
-### ADR-009: Diseño de la Web API
+### ADR-009: Arquitectura de la Web API
 - ASP.NET Core Minimal API (.NET 8), por simplicidad y alineación con el spec.
-- TDD con tests de integración usando `WebApplicationFactory<Program>`.
-- Reutilización directa de `CustomerStore`, `CustomerValidator` y `Customer` del proyecto Core.
-- Fichero de persistencia propio de la API (`data/clientes_store.db`), independiente del Desktop.
-- El `Dictionary<string, Customer>` interno se mantiene por rendimiento; la API serializa los valores como array en las respuestas.
-- Serialización con Newtonsoft.Json (ya usado en Core) y `CamelCasePropertyNamesContractResolver` para respuestas y peticiones.
+- `Program.cs` como capa fina: reutiliza `CustomerStore`, `CustomerValidator` y `Customer` del proyecto Core.
+- Fichero de persistencia propio (`data/clientes_store.db`), independiente del Desktop.
+- `Dictionary<string, Customer>` interno se mantiene por rendimiento; la API serializa los valores como array en las respuestas.
 - Thread-safety con `lock` inline en `Program.cs`, sin wrappers adicionales.
 - Ruta del fichero configurable via clave `StorePath` en `IConfiguration`, con valor por defecto `data/clientes_store.db`.
-- Tests aislados: cada clase de test crea un fichero temporal único y lo elimina al finalizar (patrón `IDisposable`).
+
+### ADR-010: Contrato HTTP de la API
+- Respuestas JSON en camelCase (`dni`, `nombre`, `fechaNacimiento`, ...) via `ConfigureHttpJsonOptions`.
 - Errores de validación en el 400 con estructura `{ "errors": [{ "field": "...", "message": "..." }] }`.
 - Header `Location` en el 201 apunta a `/clientes/{dni}`.
+
+### ADR-011: Estrategia de tests de integración
+- TDD con `WebApplicationFactory<Program>`; `public partial class Program` expone la clase al proyecto de tests.
+- Tests aislados: cada clase hereda de `ApiTestBase`, que crea un fichero temporal único y lo elimina al finalizar (`IDisposable`).
+- `ApiTestBase` provee helpers `SeedCliente` (escritura directa al store) y `JsonBody` (serialización camelCase para POST).
+- Detalle completo en [`TESTS.md`](TESTS.md).
 
 ---
 
