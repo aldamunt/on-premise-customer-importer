@@ -1,5 +1,6 @@
 using CustomerImporter.Core.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace CustomerImporter.Core.Services;
 
@@ -9,51 +10,90 @@ public static class JsonCustomerImporter
     {
         var result = new ImportResult();
 
-        List<Customer>? raw;
+        JArray rawArray;
         try
         {
-            raw = JsonConvert.DeserializeObject<List<Customer>>(jsonContent);
+            rawArray = JArray.Parse(jsonContent);
         }
         catch (JsonException ex)
         {
-            result.Errors.Add($"JSON mal formado: {ex.Message}");
+            result.Errors.Add(new ImportError
+            {
+                Row = 0,
+                RawData = jsonContent.Length > 200 ? jsonContent[..200] + "..." : jsonContent,
+                Messages = [$"JSON mal formado: {ex.Message}"]
+            });
             return result;
         }
 
-        if (raw is null || raw.Count == 0)
-            return result;
+        result.TotalRows = rawArray.Count;
 
-        for (int i = 0; i < raw.Count; i++)
+        for (int i = 0; i < rawArray.Count; i++)
         {
-            var errors = Validate(raw[i], i + 1);
-            if (errors.Count > 0)
+            var token = rawArray[i];
+            var rawData = token.ToString(Formatting.None);
+
+            Customer? customer;
+            try
             {
-                result.Errors.AddRange(errors);
+                customer = token.ToObject<Customer>();
+            }
+            catch
+            {
+                result.Errors.Add(new ImportError
+                {
+                    Row = i + 1,
+                    RawData = rawData,
+                    Messages = ["No se pudo deserializar el registro."]
+                });
                 continue;
             }
 
-            result.Customers.Add(raw[i]);
+            if (customer is null)
+            {
+                result.Errors.Add(new ImportError
+                {
+                    Row = i + 1,
+                    RawData = rawData,
+                    Messages = ["Registro nulo."]
+                });
+                continue;
+            }
+
+            var errors = Validate(customer);
+            if (errors.Count > 0)
+            {
+                result.Errors.Add(new ImportError
+                {
+                    Row = i + 1,
+                    RawData = rawData,
+                    Messages = errors
+                });
+                continue;
+            }
+
+            result.Customers.Add(customer);
         }
 
         return result;
     }
 
-    private static List<string> Validate(Customer c, int index)
+    private static List<string> Validate(Customer c)
     {
         var errors = new List<string>();
 
         if (!CustomerValidator.IsValidDni(c.Dni))
-            errors.Add($"Registro {index}: DNI inválido '{c.Dni}'.");
+            errors.Add($"DNI inválido '{c.Dni}'.");
         if (!CustomerValidator.IsValidName(c.Nombre))
-            errors.Add($"Registro {index}: nombre inválido '{c.Nombre}'.");
+            errors.Add($"Nombre inválido '{c.Nombre}'.");
         if (!CustomerValidator.IsValidName(c.Apellidos))
-            errors.Add($"Registro {index}: apellidos inválidos '{c.Apellidos}'.");
+            errors.Add($"Apellidos inválidos '{c.Apellidos}'.");
         if (!CustomerValidator.IsValidFechaNacimiento(c.FechaNacimiento))
-            errors.Add($"Registro {index}: fecha de nacimiento inválida '{c.FechaNacimiento}'.");
+            errors.Add($"Fecha de nacimiento inválida '{c.FechaNacimiento}'.");
         if (!CustomerValidator.IsValidTelefono(c.Telefono))
-            errors.Add($"Registro {index}: teléfono inválido '{c.Telefono}'.");
+            errors.Add($"Teléfono inválido '{c.Telefono}'.");
         if (!CustomerValidator.IsValidEmail(c.Email))
-            errors.Add($"Registro {index}: email inválido '{c.Email}'.");
+            errors.Add($"Email inválido '{c.Email}'.");
 
         return errors;
     }

@@ -41,6 +41,26 @@ public static partial class CustomerValidator
         return EmailRegex().IsMatch(email);
     }
 
+    public static List<Models.ValidationError> Validate(Models.Customer customer)
+    {
+        var errors = new List<Models.ValidationError>();
+
+        if (!IsValidDni(customer.Dni))
+            errors.Add(new() { Field = "Dni", Message = "DNI inválido. Formato: 8 dígitos + letra." });
+        if (!IsValidName(customer.Nombre))
+            errors.Add(new() { Field = "Nombre", Message = "Nombre inválido. Solo letras, espacios, guiones o apóstrofos." });
+        if (!IsValidName(customer.Apellidos))
+            errors.Add(new() { Field = "Apellidos", Message = "Apellidos inválidos. Solo letras, espacios, guiones o apóstrofos." });
+        if (!IsValidFechaNacimiento(customer.FechaNacimiento))
+            errors.Add(new() { Field = "FechaNacimiento", Message = "Fecha inválida. Formato: dd/MM/yyyy, no futura." });
+        if (!IsValidTelefono(customer.Telefono))
+            errors.Add(new() { Field = "Telefono", Message = "Teléfono inválido. 9 dígitos o +XX seguido de 9 dígitos." });
+        if (!IsValidEmail(customer.Email))
+            errors.Add(new() { Field = "Email", Message = "Email inválido. Formato: usuario@dominio.ext" });
+
+        return errors;
+    }
+
     [GeneratedRegex(@"^\d{8}[A-Za-z]$")]
     private static partial Regex DniRegex();
 
