@@ -15,4 +15,9 @@
     <ProjectReference Include="..\CustomerImporter.Core\CustomerImporter.Core.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <!-- Sample data copied to output on build; PreserveNewest keeps runtime changes intact -->
+    <Content Include="data\clientes_store.db" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
