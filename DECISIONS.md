@@ -19,6 +19,11 @@ Decisiones técnicas y de diseño del proyecto **On-Premise Customer Importer**.
 - Tests unitarios por servicio: Validator, CsvImporter, JsonImporter, Store.
 - Detalle completo en [`TESTS.md`](TESTS.md).
 
+### ADR-004: UI WinForms
+- Edición inline activada en la DataGridView.
+- Botón para añadir clientes manualmente desde la UI.
+- Barra de progreso real (avance por registro procesado) durante la importación.
+
 ---
 
 *Cada nueva decisión se añade al final con el siguiente número de ADR.*
